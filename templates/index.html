@@ -142,10 +142,15 @@
             padding: 10px 15px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
+            background: #1a1a2e;
             color: #fff;
             font-size: 1rem;
             min-width: 120px;
+        }
+
+        .control-item select option {
+            background: #1a1a2e;
+            color: #fff;
         }
 
         .btn {
@@ -407,6 +412,26 @@
                     </select>
                 </div>
 
+                <div class="control-item">
+                    <label>(가) 유전 방식</label>
+                    <select id="geneAMode">
+                        <option value="autosomal_recessive" selected>상염색체 열성</option>
+                        <option value="autosomal_dominant">상염색체 우성</option>
+                        <option value="x_linked_recessive">X염색체 열성</option>
+                        <option value="x_linked_dominant">X염색체 우성</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label>(나) 유전 방식</label>
+                    <select id="geneBMode">
+                        <option value="autosomal_recessive" selected>상염색체 열성</option>
+                        <option value="autosomal_dominant">상염색체 우성</option>
+                        <option value="x_linked_recessive">X염색체 열성</option>
+                        <option value="x_linked_dominant">X염색체 우성</option>
+                    </select>
+                </div>
+
                 <button class="btn btn-primary" id="generateBtn" onclick="generate()">
                     문제 생성
                 </button>
@@ -490,7 +515,9 @@
                     body: JSON.stringify({
                         num_children_left: parseInt(document.getElementById('leftChildren').value),
                         num_children_right: parseInt(document.getElementById('rightChildren').value),
-                        num_children_gen3: parseInt(document.getElementById('gen3Children').value)
+                        num_children_gen3: parseInt(document.getElementById('gen3Children').value),
+                        gene_a_mode: document.getElementById('geneAMode').value,
+                        gene_b_mode: document.getElementById('geneBMode').value
                     })
                 });
 

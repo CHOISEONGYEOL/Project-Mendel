@@ -36,20 +36,32 @@ def generate():
         num_children_right = data.get('num_children_right', 2)
         num_children_gen3 = data.get('num_children_gen3', 2)
 
+        # 유전 방식 파싱
+        mode_map = {
+            'autosomal_recessive': InheritanceMode.AUTOSOMAL_RECESSIVE,
+            'autosomal_dominant': InheritanceMode.AUTOSOMAL_DOMINANT,
+            'x_linked_recessive': InheritanceMode.X_LINKED_RECESSIVE,
+            'x_linked_dominant': InheritanceMode.X_LINKED_DOMINANT
+        }
+        gene_a_mode = mode_map.get(data.get('gene_a_mode', 'autosomal_recessive'),
+                                   InheritanceMode.AUTOSOMAL_RECESSIVE)
+        gene_b_mode = mode_map.get(data.get('gene_b_mode', 'autosomal_recessive'),
+                                   InheritanceMode.AUTOSOMAL_RECESSIVE)
+
         # 유전자 설정
         genes = [
             Gene(
                 symbol="A",
                 dominant_allele="A",
                 recessive_allele="a",
-                inheritance_mode=InheritanceMode.AUTOSOMAL_RECESSIVE,
+                inheritance_mode=gene_a_mode,
                 trait_name="(가)"
             ),
             Gene(
                 symbol="B",
                 dominant_allele="B",
                 recessive_allele="b",
-                inheritance_mode=InheritanceMode.AUTOSOMAL_RECESSIVE,
+                inheritance_mode=gene_b_mode,
                 trait_name="(나)"
             )
         ]
