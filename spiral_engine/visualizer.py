@@ -244,13 +244,18 @@ class PedigreeVisualizer:
                 # 수직 내림
                 ax.plot([mx, mx], [my, drop_y], color='black', lw=cfg.line_width, zorder=1)
 
-                # 자녀들 수평선
+                # 자녀들 수평선 (2명 이상일 때만)
                 k_xs = [k.x_pos for k in kids]
-                ax.plot([min(k_xs), max(k_xs)], [drop_y, drop_y],
-                        color='black', lw=cfg.line_width, zorder=1)
+                if len(kids) >= 2:
+                    ax.plot([min(k_xs), max(k_xs)], [drop_y, drop_y],
+                            color='black', lw=cfg.line_width, zorder=1)
 
                 # 자녀들 머리 위 수직선
                 for k in kids:
+                    # 자녀가 1명이면 부모 중앙에서 바로 수직선
+                    if len(kids) == 1:
+                        ax.plot([mx, k.x_pos], [drop_y, drop_y],
+                                color='black', lw=cfg.line_width, zorder=1)
                     ax.plot([k.x_pos, k.x_pos], [drop_y, k.y_pos + cfg.node_size],
                             color='black', lw=cfg.line_width, zorder=1)
 
