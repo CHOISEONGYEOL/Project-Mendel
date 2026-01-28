@@ -381,7 +381,8 @@ class PedigreeVisualizer:
             if p.display_name:
                 ax.text(p.x_pos, p.y_pos - cfg.node_size - 0.2, p.display_name,
                         ha='center', va='top',
-                        fontsize=cfg.font_size_label, fontweight='bold')
+                        fontsize=cfg.font_size_label, fontweight='bold',
+                        fontfamily=KOREAN_FONT)
 
     def _draw_legend(self, ax, family):
         cfg = self.config
@@ -419,7 +420,8 @@ class PedigreeVisualizer:
                 else:
                     self._draw_grid_circle(ax, lx, cy, sz)
 
-            ax.text(lx + 0.4, cy, txt, va='center', fontsize=cfg.font_size_legend)
+            ax.text(lx + 0.4, cy, txt, va='center', fontsize=cfg.font_size_legend,
+                    fontfamily=KOREAN_FONT)
 
     # --------------------------------------------------------
     # 유틸리티 메서드
