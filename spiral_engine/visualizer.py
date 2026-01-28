@@ -5,7 +5,7 @@ visualizer.py - 평가원 수능 스타일 고밀도 가계도 시각화 엔진 
 
 import io
 import base64
-import platform
+import os
 import math
 import numpy as np
 from typing import Optional
@@ -15,20 +15,32 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle
+from matplotlib import font_manager
 from .models import Family, Person, Gender
 
 
 # ============================================================
-# 한글 폰트 설정 (시스템 자동 감지)
+# 한글 폰트 설정 (번들 폰트 우선 사용)
 # ============================================================
 def setup_korean_font():
-    system = platform.system()
-    if system == 'Windows':
-        font_name = 'Malgun Gothic'
-    elif system == 'Darwin':
-        font_name = 'AppleGothic'
+    # 프로젝트 내 번들 폰트 경로
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    bundled_font = os.path.join(base_dir, 'fonts', 'NotoSansKR-Regular.ttf')
+
+    if os.path.exists(bundled_font):
+        # 번들 폰트 등록
+        font_manager.fontManager.addfont(bundled_font)
+        font_name = 'Noto Sans KR'
     else:
-        font_name = 'NanumGothic'  # 리눅스/코랩 등
+        # 폴백: 시스템 폰트
+        import platform
+        system = platform.system()
+        if system == 'Windows':
+            font_name = 'Malgun Gothic'
+        elif system == 'Darwin':
+            font_name = 'AppleGothic'
+        else:
+            font_name = 'DejaVu Sans'  # 기본 폴백
 
     plt.rcParams['font.family'] = font_name
     plt.rcParams['axes.unicode_minus'] = False
