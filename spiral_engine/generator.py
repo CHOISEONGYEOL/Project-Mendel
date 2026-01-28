@@ -191,12 +191,13 @@ class PedigreeGenerator:
         # 첫 번째 자녀는 ⓐ (외부 배우자 표시)
         for i, gender in enumerate(right_genders):
             if i == 0:
-                # 왼쪽 자녀와 결혼할 사람 - ⓐ로 표시
+                # 왼쪽 자녀와 결혼할 사람 - ⓐ로 표시 (표현형 숨김)
                 child = Person(
                     id=f"P{person_id}",
                     gender=gender,
                     generation=2,
-                    display_name="ⓐ"
+                    display_name="ⓐ",
+                    phenotype_hidden=True
                 )
             else:
                 child = Person(
