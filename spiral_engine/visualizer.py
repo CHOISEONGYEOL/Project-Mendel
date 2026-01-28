@@ -16,6 +16,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle
 from matplotlib import font_manager
+from matplotlib import patheffects
 from .models import Family, Person, Gender
 
 
@@ -282,8 +283,12 @@ class PedigreeVisualizer:
             x, y = p.x_pos, p.y_pos
             sz = cfg.node_size
 
-            # 표현형 숨김 (ⓐ, ?) - 도형 없이 라벨만 표시
+            # 표현형 숨김 (ⓐ, ?) - 흰색 배경 네모만 표시 (테두리 없음)
             if p.phenotype_hidden:
+                # 흰색 채우기, 테두리 없는 사각형
+                patch = Rectangle((x - sz, y - sz), sz * 2, sz * 2,
+                                  facecolor='white', edgecolor='none', lw=0, zorder=10)
+                ax.add_patch(patch)
                 continue
 
             # 형질 판단
@@ -388,6 +393,12 @@ class PedigreeVisualizer:
     # --------------------------------------------------------
     def _draw_labels(self, ax, family):
         cfg = self.config
+        # 텍스트 굵기 강화용 path effect (외곽선 추가)
+        stroke_effect = [
+            patheffects.Stroke(linewidth=3, foreground='black'),
+            patheffects.Normal()
+        ]
+
         for p in family.members.values():
             if p.display_name:
                 # ⓐ, ? 는 크게 표시
@@ -396,11 +407,12 @@ class PedigreeVisualizer:
                 else:
                     fontsize = cfg.font_size_label + 2
 
-                # 도형 중앙에 라벨 배치 (배경 없이 텍스트만, 최대 굵기)
+                # 도형 중앙에 라벨 배치 (외곽선으로 굵기 강화)
                 ax.text(p.x_pos, p.y_pos, p.display_name,
                         ha='center', va='center',
                         fontsize=fontsize, fontweight='black',
                         fontfamily=KOREAN_FONT,
+                        path_effects=stroke_effect,
                         zorder=20)
 
     def _draw_legend(self, ax, family):
@@ -422,6 +434,12 @@ class PedigreeVisualizer:
             (f"{n2} 발현 여자", 'white', False, True, Gender.FEMALE),
         ]
 
+        # 범례 텍스트 굵기 강화 (2배)
+        legend_stroke = [
+            patheffects.Stroke(linewidth=1.5, foreground='black'),
+            patheffects.Normal()
+        ]
+
         sz = 0.15  # 범례 아이콘 크기
         for i, (txt, col, h_a, h_b, gen) in enumerate(items):
             cy = ly - i * 0.5
@@ -440,7 +458,8 @@ class PedigreeVisualizer:
                     self._draw_grid_circle(ax, lx, cy, sz)
 
             ax.text(lx + 0.4, cy, txt, va='center', fontsize=cfg.font_size_legend,
-                    fontfamily=KOREAN_FONT)
+                    fontfamily=KOREAN_FONT, fontweight='bold',
+                    path_effects=legend_stroke)
 
     # --------------------------------------------------------
     # 유틸리티 메서드
