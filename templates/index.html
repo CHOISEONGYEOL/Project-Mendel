@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiral Engine - 수능 유전 문제 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        /* 이미지 확대 모달 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-image {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0, 210, 255, 0.3);
+        }
+
+        .modal-close {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: #fff;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .modal-close:hover {
+            color: #00d2ff;
+        }
+
+        .zoom-hint {
+            text-align: center;
+            color: #8892b0;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .pedigree-container {
+            cursor: zoom-in;
+            position: relative;
+        }
+
+        .pedigree-container:hover .zoom-icon {
+            opacity: 1;
+        }
+
+        .zoom-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #8892b0;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-item label {
+            font-size: 0.9rem;
+            color: #8892b0;
+        }
+
+        .control-item select, .control-item input {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+            min-width: 120px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary.active {
+            background: linear-gradient(90deg, #00ff88, #00cc6a);
+        }
+
+        .answer-value {
+            color: #00ff88 !important;
+            font-weight: bold;
+        }
+
+        .answer-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .answer-section.show {
+            display: block;
+        }
+
+        .answer-card {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .answer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .answer-table th, .answer-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .answer-table th {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .result {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .result {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #00d2ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pedigree-image {
+            width: 100%;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .members-table th, .members-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .members-table th {
+            color: #00d2ff;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-normal {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .badge-affected {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        .dna-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .dna-table th, .dna-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dna-table th {
+            background: rgba(0, 210, 255, 0.2);
+            color: #00d2ff;
+        }
+
+        .hidden-value {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #8892b0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00d2ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            color: #ff6b6b;
+            text-align: center;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-icon {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 이미지 확대 모달 -->
+    <div class="modal-overlay" id="imageModal" onclick="closeModal()">
+        <span class="modal-close">&times;</span>
+        <img class="modal-image" id="modalImage" src="" alt="확대된 가계도">
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Spiral Engine</h1>
+            <p>수능 생명과학 유전 문제 자동 생성기</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <div class="control-item">
+                    <label>왼쪽 가족 자녀</label>
+                    <select id="leftChildren">
+                        <option value="1">1명</option>
+                        <option value="2" selected>2명</option>
+                        <option value="3">3명</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label>오른쪽 가족 자녀</label>
+                    <select id="rightChildren">
+                        <option value="1">1명</option>
+                        <option value="2" selected>2명</option>
+                        <option value="3">3명</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label>3세대 자녀 수</label>
+                    <select id="gen3Children">
+                        <option value="1">1명</option>
+                        <option value="2" selected>2명</option>
+                        <option value="3">3명</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" id="generateBtn" onclick="generate()">
+                    문제 생성
+                </button>
+                <button class="btn btn-secondary" id="answerBtn" onclick="toggleAnswer()" style="display:none;">
+                    정답 보기
+                </button>
+            </div>
+        </div>
+
+        <div id="resultArea"></div>
+    </div>
+
+    <script>
+        // 페이지 로드 시 자동 생성
+        window.onload = function() {
+            generate();
+        };
+
+        // 이미지 확대 모달
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.classList.add('active');
+            modalImg.src = imageSrc;
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 정답 데이터 저장
+        let currentAnswerData = null;
+        let isAnswerVisible = false;
+
+        // 정답 토글
+        function toggleAnswer() {
+            const btn = document.getElementById('answerBtn');
+            const answerSection = document.getElementById('answerSection');
+
+            isAnswerVisible = !isAnswerVisible;
+
+            if (isAnswerVisible) {
+                btn.textContent = '정답 숨기기';
+                btn.classList.add('active');
+                if (answerSection) answerSection.classList.add('show');
+            } else {
+                btn.textContent = '정답 보기';
+                btn.classList.remove('active');
+                if (answerSection) answerSection.classList.remove('show');
+            }
+        }
+
+        async function generate() {
+            const btn = document.getElementById('generateBtn');
+            const resultArea = document.getElementById('resultArea');
+
+            btn.disabled = true;
+            btn.textContent = '생성 중...';
+
+            resultArea.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>가계도를 생성하고 있습니다...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        num_children_left: parseInt(document.getElementById('leftChildren').value),
+                        num_children_right: parseInt(document.getElementById('rightChildren').value),
+                        num_children_gen3: parseInt(document.getElementById('gen3Children').value)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    renderResult(data);
+                    // 정답 버튼 표시
+                    document.getElementById('answerBtn').style.display = 'inline-block';
+                    isAnswerVisible = false;
+                    document.getElementById('answerBtn').textContent = '정답 보기';
+                    document.getElementById('answerBtn').classList.remove('active');
+                } else {
+                    resultArea.innerHTML = `
+                        <div class="error">
+                            <h3>오류 발생</h3>
+                            <p>${data.error}</p>
+                            ${data.details ? `<p>${data.details.join('<br>')}</p>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultArea.innerHTML = `
+                    <div class="error">
+                        <h3>네트워크 오류</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+
+            btn.disabled = false;
+            btn.textContent = '문제 생성';
+        }
+
+        function renderResult(data) {
+            const resultArea = document.getElementById('resultArea');
+
+            // 구성원 테이블 HTML
+            let membersHtml = data.members.map(m => {
+                const genderIcon = m.gender === 'male' ? '♂' : '♀';
+                let traitsHtml = '';
+
+                for (const [traitName, info] of Object.entries(m.traits)) {
+                    const badgeClass = info.affected ? 'badge-affected' : 'badge-normal';
+                    const statusText = info.affected ? '발현' : '정상';
+                    traitsHtml += '<span class="badge ' + badgeClass + '">' +
+                        traitName + ': ' + info.genotype + ' (' + statusText + ')' +
+                        '</span> ';
+                }
+
+                return '<tr>' +
+                    '<td>' + m.name + '</td>' +
+                    '<td>' + genderIcon + '</td>' +
+                    '<td>' + m.generation + '세대</td>' +
+                    '<td>' + traitsHtml + '</td>' +
+                    '</tr>';
+            }).join('');
+
+            // DNA 표 HTML
+            let dnaHeaderHtml = data.dna_table.headers.map(h =>
+                '<th>' + h + '</th>'
+            ).join('');
+
+            let dnaRowsHtml = data.dna_table.rows.map(row => {
+                let cells = '<td>' + row.member + '</td>';
+                for (const header of data.dna_table.headers.slice(1)) {
+                    const value = row.values[header];
+                    if (value === '?') {
+                        cells += '<td class="hidden-value">?</td>';
+                    } else {
+                        cells += '<td>' + value + '</td>';
+                    }
+                }
+                return '<tr>' + cells + '</tr>';
+            }).join('');
+
+            // 정답 테이블 HTML (별도 생성)
+            let answerMembersHtml = data.members.map(m => {
+                const genderIcon = m.gender === 'male' ? '♂' : '♀';
+                const traitA = m.traits['(가)'] ? m.traits['(가)'].genotype : '-';
+                const traitB = m.traits['(나)'] ? m.traits['(나)'].genotype : '-';
+                return '<tr>' +
+                    '<td>' + (m.name || '(없음)') + '</td>' +
+                    '<td>' + genderIcon + '</td>' +
+                    '<td>' + traitA + '</td>' +
+                    '<td>' + traitB + '</td>' +
+                    '</tr>';
+            }).join('');
+
+            // DNA 정답 테이블 HTML
+            let answerDnaRowsHtml = '';
+            if (data.dna_table.answer_key) {
+                answerDnaRowsHtml = Object.entries(data.dna_table.answer_key).map(([member, values]) => {
+                    let cells = '<td>' + (member || '(없음)') + '</td>';
+                    for (const header of data.dna_table.headers.slice(1)) {
+                        cells += '<td class="answer-value">' + (values[header] !== undefined ? values[header] : '-') + '</td>';
+                    }
+                    return '<tr>' + cells + '</tr>';
+                }).join('');
+            } else {
+                answerDnaRowsHtml = dnaRowsHtml;
+            }
+
+            resultArea.innerHTML = '<div class="status-bar">' +
+                '<div class="status-item">' +
+                '<span class="status-icon">✅</span>' +
+                '<span>유전 논리 검증 통과</span>' +
+                '</div>' +
+                '<div class="status-item">' +
+                '<span class="status-icon">👨‍👩‍👧‍👦</span>' +
+                '<span>구성원 ' + data.members.length + '명</span>' +
+                '</div>' +
+                '<div class="status-item">' +
+                '<span class="status-icon">🧬</span>' +
+                '<span>3세대 가계도</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="result" style="margin-top: 30px;">' +
+                '<div class="card">' +
+                '<h2>📊 가계도</h2>' +
+                '<div class="pedigree-container" onclick="openModal(\'data:image/png;base64,' + data.image + '\')">' +
+                '<span class="zoom-icon">🔍 클릭하여 확대</span>' +
+                '<img class="pedigree-image" src="data:image/png;base64,' + data.image + '" alt="가계도">' +
+                '</div>' +
+                '<p class="zoom-hint">이미지를 클릭하면 확대됩니다</p>' +
+                '</div>' +
+                '<div class="card">' +
+                '<h2>👥 구성원 정보</h2>' +
+                '<table class="members-table">' +
+                '<thead><tr><th>번호</th><th>성별</th><th>세대</th><th>유전자형</th></tr></thead>' +
+                '<tbody>' + membersHtml + '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card" style="margin-top: 30px;">' +
+                '<h2>🧬 DNA 상대량 표</h2>' +
+                '<p style="color: #8892b0; margin-bottom: 15px;">?로 표시된 값을 구하시오.</p>' +
+                '<table class="dna-table">' +
+                '<thead><tr>' + dnaHeaderHtml + '</tr></thead>' +
+                '<tbody>' + dnaRowsHtml + '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '<div id="answerSection" class="answer-section">' +
+                '<div class="card answer-card" style="margin-top: 30px;">' +
+                '<h2>✅ 정답</h2>' +
+                '<h3 style="color: #00ff88; margin: 20px 0 10px;">📋 유전자형 정답</h3>' +
+                '<table class="answer-table">' +
+                '<thead><tr><th>구성원</th><th>성별</th><th>(가) 유전자형</th><th>(나) 유전자형</th></tr></thead>' +
+                '<tbody>' + answerMembersHtml + '</tbody>' +
+                '</table>' +
+                '<h3 style="color: #00ff88; margin: 20px 0 10px;">📊 DNA 상대량 정답</h3>' +
+                '<table class="answer-table">' +
+                '<thead><tr>' + dnaHeaderHtml + '</tr></thead>' +
+                '<tbody>' + answerDnaRowsHtml + '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>';
+        }
+    </script>
+</body>
+</html>
