@@ -282,9 +282,8 @@ class PedigreeVisualizer:
             x, y = p.x_pos, p.y_pos
             sz = cfg.node_size
 
-            # 물음표(?) 처리
+            # 표현형 숨김 (ⓐ, ?) - 도형 없이 라벨만 표시
             if p.phenotype_hidden:
-                self._draw_shape_base(ax, x, y, sz, p.gender, 'white')
                 continue
 
             # 형질 판단
@@ -391,10 +390,18 @@ class PedigreeVisualizer:
         cfg = self.config
         for p in family.members.values():
             if p.display_name:
-                ax.text(p.x_pos, p.y_pos - cfg.node_size - 0.2, p.display_name,
-                        ha='center', va='top',
-                        fontsize=cfg.font_size_label, fontweight='bold',
-                        fontfamily=KOREAN_FONT)
+                # ⓐ, ? 는 크게 표시
+                if p.display_name in ['ⓐ', '?']:
+                    fontsize = 45
+                else:
+                    fontsize = cfg.font_size_label + 2
+
+                # 도형 중앙에 라벨 배치 (배경 없이 텍스트만, 최대 굵기)
+                ax.text(p.x_pos, p.y_pos, p.display_name,
+                        ha='center', va='center',
+                        fontsize=fontsize, fontweight='black',
+                        fontfamily=KOREAN_FONT,
+                        zorder=20)
 
     def _draw_legend(self, ax, family):
         cfg = self.config

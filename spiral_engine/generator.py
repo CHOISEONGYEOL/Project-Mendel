@@ -129,19 +129,30 @@ class PedigreeGenerator:
         person_id = 1
         display_num = 1
 
+        # ⓐ 위치 랜덤 결정: 1세대 또는 2세대
+        a_in_gen1 = random.choice([True, False])
+        # 1세대에서 ⓐ 위치: 0=왼쪽남, 1=왼쪽여, 2=오른쪽남, 3=오른쪽여
+        a_gen1_position = random.randint(0, 3) if a_in_gen1 else -1
+
         # ===== 1세대: 왼쪽 조부모 =====
+        is_a = (a_gen1_position == 0)
         gf_left = Person(
             id=f"P{person_id}", gender=Gender.MALE, generation=1,
-            display_name=str(display_num)
+            display_name="ⓐ" if is_a else str(display_num),
+            phenotype_hidden=is_a
         )
-        display_num += 1
+        if not is_a:
+            display_num += 1
         person_id += 1
 
+        is_a = (a_gen1_position == 1)
         gm_left = Person(
             id=f"P{person_id}", gender=Gender.FEMALE, generation=1,
-            display_name=str(display_num)
+            display_name="ⓐ" if is_a else str(display_num),
+            phenotype_hidden=is_a
         )
-        display_num += 1
+        if not is_a:
+            display_num += 1
         person_id += 1
 
         family.add_member(gf_left)
@@ -149,18 +160,24 @@ class PedigreeGenerator:
         family.add_couple(gf_left.id, gm_left.id)
 
         # ===== 1세대: 오른쪽 조부모 =====
+        is_a = (a_gen1_position == 2)
         gf_right = Person(
             id=f"P{person_id}", gender=Gender.MALE, generation=1,
-            display_name=str(display_num)
+            display_name="ⓐ" if is_a else str(display_num),
+            phenotype_hidden=is_a
         )
-        display_num += 1
+        if not is_a:
+            display_num += 1
         person_id += 1
 
+        is_a = (a_gen1_position == 3)
         gm_right = Person(
             id=f"P{person_id}", gender=Gender.FEMALE, generation=1,
-            display_name=str(display_num)
+            display_name="ⓐ" if is_a else str(display_num),
+            phenotype_hidden=is_a
         )
-        display_num += 1
+        if not is_a:
+            display_num += 1
         person_id += 1
 
         family.add_member(gf_right)
@@ -188,10 +205,11 @@ class PedigreeGenerator:
         right_children = []
         right_genders = self._generate_children_genders(config.num_children_right)
 
-        # 첫 번째 자녀는 ⓐ (외부 배우자 표시)
         for i, gender in enumerate(right_genders):
-            if i == 0:
-                # 왼쪽 자녀와 결혼할 사람 - ⓐ로 표시 (표현형 숨김)
+            # ⓐ가 2세대에 배치되는 경우: 첫 번째 자녀가 ⓐ
+            is_a_gen2 = (not a_in_gen1 and i == 0)
+
+            if is_a_gen2:
                 child = Person(
                     id=f"P{person_id}",
                     gender=gender,
