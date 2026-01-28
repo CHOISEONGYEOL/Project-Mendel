@@ -118,10 +118,10 @@ class PedigreeGenerator:
 
         번호 체계:
         - 1, 2: 왼쪽 조부모
-        - 오른쪽 조부모: 번호 없음 (또는 별도)
-        - 3, 4, 5...: 2세대 자녀들
+        - 3, 4: 오른쪽 조부모
+        - 5, 6...: 2세대 자녀들
         - ⓐ: 외부 배우자 (다른 가족에서 옴)
-        - 7, 8...: 3세대 손자녀
+        - n, n+1...: 3세대 손자녀
         """
         family = Family()
         family.genes = config.genes
@@ -132,14 +132,16 @@ class PedigreeGenerator:
         # ===== 1세대: 왼쪽 조부모 =====
         gf_left = Person(
             id=f"P{person_id}", gender=Gender.MALE, generation=1,
-            display_name=""  # 번호 없음
+            display_name=str(display_num)
         )
+        display_num += 1
         person_id += 1
 
         gm_left = Person(
             id=f"P{person_id}", gender=Gender.FEMALE, generation=1,
-            display_name=""
+            display_name=str(display_num)
         )
+        display_num += 1
         person_id += 1
 
         family.add_member(gf_left)
